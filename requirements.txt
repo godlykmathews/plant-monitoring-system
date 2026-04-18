@@ -1,0 +1,8 @@
+torch
+torchvision
+transformers
+pillow
+pyserial
+requests
+opencv-python
+numpy
