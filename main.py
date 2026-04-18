@@ -34,7 +34,7 @@ try:
     model = MobileNetV2ForImageClassification.from_pretrained(model_path)
     
     # 3. Initialize Webcam
-    cap = cv2.VideoCapture(1) # '0' is usually the default webcam
+    cap = cv2.VideoCapture(0) # '0' is usually the default webcam
 
     if not cap.isOpened():
         print("ERROR: Could not open webcam.")
