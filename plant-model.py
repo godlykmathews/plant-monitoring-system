@@ -13,10 +13,12 @@ ESP_PORT = "COM3"  # Change to "/dev/ttyUSB0" for Raspberry Pi
 BAUD_RATE = 115200
 
 # 1.1 Web Server Settings
-SERVER_URL = "http://34.47.248.124:8080/api/log_disease"  # TODO: UPDATE THIS WITH DEPLOYED URL
-LOG_COOLDOWN = 5.0  # seconds between logs
+SERVER_URL = "http://127.0.0.1:8080/api/log_disease"  # TODO: UPDATE THIS WITH DEPLOYED URL
+SCAN_LOG_COOLDOWN = 300.0  # seconds between scan logs
+SPRAY_LOG_COOLDOWN = 60.0  # seconds between spray logs
 last_log_time = 0
 sprayed_times = 0
+last_logged_history_type = None
 
 print("Loading model for live feed...")
 
@@ -34,7 +36,7 @@ try:
     model = MobileNetV2ForImageClassification.from_pretrained(model_path)
     
     # 3. Initialize Webcam
-    cap = cv2.VideoCapture(0) # '0' is usually the default webcam
+    cap = cv2.VideoCapture(1) # '0' is usually the default webcam
 
     if not cap.isOpened():
         print("ERROR: Could not open webcam.")
@@ -75,7 +77,10 @@ try:
 
         # --- LOG TO GOOGLE CLOUD SERVER ---
         current_time = time.time()
-        if current_time - last_log_time > LOG_COOLDOWN:
+        cooldown = SPRAY_LOG_COOLDOWN if history_type == "sprayed" else SCAN_LOG_COOLDOWN
+        history_changed = history_type != last_logged_history_type
+
+        if history_changed or (current_time - last_log_time > cooldown):
             try:
                 payload = {
                     "disease_name": label,
@@ -94,6 +99,7 @@ try:
             # Reset counters and timers
             last_log_time = current_time
             sprayed_times = 0
+            last_logged_history_type = history_type
 
         # 5. Display Result on Screen
         # Add text to the video frame
