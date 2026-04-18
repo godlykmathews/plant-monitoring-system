@@ -4,11 +4,19 @@ import numpy as np
 import serial  # Added serial library
 from PIL import Image
 from transformers import MobileNetV2ImageProcessor, MobileNetV2ForImageClassification
+import requests
+import time
 
 # 1. Setup paths and Serial
 model_path = "./plant_model" 
 ESP_PORT = "COM3"  # Change to "/dev/ttyUSB0" for Raspberry Pi
 BAUD_RATE = 115200
+
+# 1.1 Web Server Settings
+SERVER_URL = "http://127.0.0.1:8080/api/log_disease"  # TODO: UPDATE THIS WITH DEPLOYED URL
+LOG_COOLDOWN = 5.0  # seconds between logs
+last_log_time = 0
+sprayed_times = 0
 
 print("Loading model for live feed...")
 
@@ -54,12 +62,38 @@ try:
 
         # --- TRIGGER PUMP LOGIC ---
         # If the label mentions fungal, send '1' to ESP32
-        if "fungal" in label.lower() or "bacterial" in label.lower():
+        is_disease = "fungal" in label.lower() or "bacterial" in label.lower()
+        if is_disease:
             if ser:
                 ser.write(b'1')
+            sprayed_times += 1
+            history_type = "sprayed"
         else:
             if ser:
                 ser.write(b'0')
+            history_type = "scan"
+
+        # --- LOG TO GOOGLE CLOUD SERVER ---
+        current_time = time.time()
+        if current_time - last_log_time > LOG_COOLDOWN:
+            try:
+                payload = {
+                    "disease_name": label,
+                    "sprayed_times": sprayed_times,
+                    "history_type": history_type
+                }
+                # Using a short timeout to prevent video feed lag
+                response = requests.post(SERVER_URL, json=payload, timeout=2.0)
+                if response.status_code == 201:
+                    print(f"Logged to server: {payload}")
+                else:
+                    print(f"Server returned error: {response.status_code} - {response.text}")
+            except Exception as e:
+                print(f"Failed to connect to server: {e}")
+            
+            # Reset counters and timers
+            last_log_time = current_time
+            sprayed_times = 0
 
         # 5. Display Result on Screen
         # Add text to the video frame
