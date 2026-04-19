@@ -1,8 +1,8 @@
 torch
 torchvision
-transformers
-pillow
-pyserial
-requests
 opencv-python
 numpy
+pillow
+transformers
+pyserial
+requests
