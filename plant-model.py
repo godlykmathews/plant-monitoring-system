@@ -9,7 +9,7 @@ import time
 
 # 1. Setup paths and Serial
 model_path = "./plant_model" 
-ESP_PORT = "COM4"  # Change to "/dev/ttyUSB0" for Raspberry Pi
+ESP_PORT = "/dev/ttyUSB0"  # Change to "/dev/ttyUSB0" for Raspberry Pi
 BAUD_RATE = 115200
 
 # 1.1 Web Server Settings
