@@ -3,8 +3,6 @@
 ## 👥 Team Details
 - **Team Name:** Codegen
 - **Members:** Anoop Narayan (Hardware), Godly K Mathews (Software Backend/UI), Bimal Ghosh (Hardware), Ajin John Thomas (Hardware)
-- **Contact Email:** Add team emails
-- **GitHub / Portfolio Links:** Add links
 
 ## 🚀 Problem Statement
 Farmers often detect plant disease late, spray inconsistently, and have no simple history view of what happened in the field.  
