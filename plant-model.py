@@ -13,7 +13,7 @@ ESP_PORT = "/dev/ttyUSB0"  # Change to "/dev/ttyUSB0" for Raspberry Pi
 BAUD_RATE = 115200
 
 # 1.1 Web Server Settings
-SERVER_URL = "http://127.0.0.1:8080/api/log_disease"  # TODO: UPDATE THIS WITH DEPLOYED URL
+SERVER_URL = "http://34.47.248.124:8080/api/log_disease"  # TODO: UPDATE THIS WITH DEPLOYED URL
 SCAN_LOG_COOLDOWN = 300.0  # seconds between scan logs
 SPRAY_LOG_COOLDOWN = 60.0  # seconds between spray logs
 last_log_time = 0
