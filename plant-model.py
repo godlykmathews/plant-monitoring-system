@@ -9,7 +9,7 @@ import time
 
 # 1. Setup paths and Serial
 model_path = "./plant_model" 
-ESP_PORT = "COM3"  # Change to "/dev/ttyUSB0" for Raspberry Pi
+ESP_PORT = "COM4"  # Change to "/dev/ttyUSB0" for Raspberry Pi
 BAUD_RATE = 115200
 
 # 1.1 Web Server Settings
@@ -18,6 +18,7 @@ SCAN_LOG_COOLDOWN = 300.0  # seconds between scan logs
 SPRAY_LOG_COOLDOWN = 60.0  # seconds between spray logs
 last_log_time = 0
 last_logged_history_type = None
+last_esp_state = None  # Tracks last command sent to ESP to avoid duplicate writes
 
 print("Loading model for live feed...")
 
@@ -35,7 +36,7 @@ try:
     model = MobileNetV2ForImageClassification.from_pretrained(model_path)
     
     # 3. Initialize Webcam
-    cap = cv2.VideoCapture(1) # '0' is usually the default webcam
+    cap = cv2.VideoCapture(0) # '0' is usually the default webcam
 
     if not cap.isOpened():
         print("ERROR: Could not open webcam.")
@@ -64,14 +65,19 @@ try:
         # --- TRIGGER PUMP LOGIC ---
         # If the label mentions fungal, send '1' to ESP32
         is_disease = "fungal" in label.lower() or "bacterial" in label.lower()
-        if is_disease:
+        current_esp_state = 1 if is_disease else 0
+        history_type = "sprayed" if is_disease else "scan"
+
+        # Send ESP command only when state changes (latest ESP flow from PI.py)
+        if current_esp_state != last_esp_state:
             if ser:
-                ser.write(b'1')
-            history_type = "sprayed"
-        else:
-            if ser:
-                ser.write(b'0')
-            history_type = "scan"
+                if current_esp_state == 1:
+                    ser.write(b'1\n')
+                    print("Pump Activated!")
+                else:
+                    ser.write(b'0\n')
+                    print("Pump Deactivated.")
+            last_esp_state = current_esp_state
 
         # --- LOG TO GOOGLE CLOUD SERVER ---
         current_time = time.time()

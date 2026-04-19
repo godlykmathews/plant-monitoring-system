@@ -1,11 +1,2 @@
-torch
-torchvision
-transformers
-pillow
-pyserial
-requests
-opencv-python
-numpy
-flask
-flask-cors
-google-cloud-firestore
+-r requirements-app.txt
+-r requirements-plant-model.txt
