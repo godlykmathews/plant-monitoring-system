@@ -17,7 +17,6 @@ SERVER_URL = "http://127.0.0.1:8080/api/log_disease"  # TODO: UPDATE THIS WITH D
 SCAN_LOG_COOLDOWN = 300.0  # seconds between scan logs
 SPRAY_LOG_COOLDOWN = 60.0  # seconds between spray logs
 last_log_time = 0
-sprayed_times = 0
 last_logged_history_type = None
 
 print("Loading model for live feed...")
@@ -68,7 +67,6 @@ try:
         if is_disease:
             if ser:
                 ser.write(b'1')
-            sprayed_times += 1
             history_type = "sprayed"
         else:
             if ser:
@@ -84,8 +82,7 @@ try:
             try:
                 payload = {
                     "disease_name": label,
-                    "sprayed_times": sprayed_times,
-                    "history_type": history_type
+                    "sprayed": history_type == "sprayed",
                 }
                 # Using a short timeout to prevent video feed lag
                 response = requests.post(SERVER_URL, json=payload, timeout=2.0)
@@ -98,7 +95,6 @@ try:
             
             # Reset counters and timers
             last_log_time = current_time
-            sprayed_times = 0
             last_logged_history_type = history_type
 
         # 5. Display Result on Screen

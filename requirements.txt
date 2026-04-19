@@ -6,3 +6,6 @@ pyserial
 requests
 opencv-python
 numpy
+flask
+flask-cors
+google-cloud-firestore
